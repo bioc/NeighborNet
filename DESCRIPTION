@@ -1,0 +1,15 @@
+Package: NeighborNet
+Title: Neighbor_net analysis 
+Version: 1.0.0
+Author: Sahar Ansari <saharansari@wayne.edu> and Sorin Draghici <sorin@wayne.edu>
+Maintainer: Sahar Ansari <saharansari@wayne.edu>
+Description: Identify the putative mechanism explaining the active interactions between genes in the investigated phenotype.
+biocViews: Software, GeneExpression, StatisticalMethod, GraphAndNetwork
+License: CC BY-NC-ND 4.0
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.0
+Depends:
+	graph,
+	stats,
+	methods

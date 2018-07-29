@@ -1,0 +1,163 @@
+%\VignetteIndexEntry{NeighborNet}
+%\VignetteDepends{NeighborNet}
+%\VignettePackage{NeighborNet}
+
+
+\documentclass[11pt]{article}
+
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\title{Neighbor\_net analysis}
+\author{Sahar Ansari and Sorin Draghici\\
+Department of Computer Science, Wayne State University, Detroit MI 48201}
+\maketitle
+
+\begin{abstract}
+
+This package is indented to be the R implementation of the method introduced in \cite{ansari2017approach}. Neighbor\_net analysis aims to take advantage of the prior knowledge of gene-gene interactions and idetifies the putative mechanisms at play in the given condition (e.g. a disease, a treatment, etc.). The captured network can be useful for the prediction of mechanisms of action of drugs or the responses of an organism to a specific impact.
+
+\end{abstract}
+
+\section{Neighbor\_net analysis}
+
+Neighbor\_net (\Rmethod{neighbor.net}) is a tool to identify the active mechanism involved in an investigated phenotype.
+This method uses two sources of data: one is the experiment data and the other is the gene-gene interactions knowledge.
+
+\subsection{Gene-gene interaction knowledge}
+
+Neighbor\_net can accept any gene-gene interaction information obtained from different databases.
+The data has to be converted to a list format. Each element in the list represents the neighborhood of one gene.
+
+We provided an example that includes the interactions exist in KEGG\cite{Kanehisa:2000} and HPRD~\cite{Peri:2003} databases.
+
+<<eval=TRUE, echo=TRUE>>=
+load(system.file("extdata/listofgenes.RData", package = "NeighborNet"))
+@
+
+The \Robject{listofgenes} is a list including the neighbors of the genes in the analysis:
+<<eval=TRUE, echo=TRUE>>=
+head(listofgenes)
+@
+
+
+
+
+\subsection{Experiment data}
+
+As an example, we provided five pre-processed data sets from GEO (GSE4183, GSE9348, GSE21510, GSE32323, GSEl8671).
+
+These data study the expression change between colorectal cancer and normal patients. The data was preprocessed using the \Rpackage{limma} package. Only probe sets with a gene associated to them have been kept.
+
+<<eval=TRUE, echo=TRUE>>=
+load(system.file("extdata/dataColorectal4183.RData", package = "NeighborNet"))
+load(system.file("extdata/dataColorectal9348.RData", package = "NeighborNet"))
+load(system.file("extdata/dataColorectal21510.RData", package = "NeighborNet"))
+load(system.file("extdata/dataColorectal32323.RData", package = "NeighborNet"))
+load(system.file("extdata/dataColorectal8671.RData", package = "NeighborNet"))
+head(dataColorectal4183)
+@
+
+
+The next step is to select the genes that are differentially expressed, with p-value lower than 1\% and absolute fold change more than 1.5.
+
+<<eval=TRUE, echo=TRUE>>=
+pvThreshold <- 0.01
+foldThreshold <- 1.5
+de1 <- dataColorectal4183$EntrezID [
+  dataColorectal4183$adj.P.Val < pvThreshold &
+  abs(dataColorectal4183$logFC) > foldThreshold
+]
+de2 <- dataColorectal9348$EntrezID [
+  dataColorectal9348$adj.P.Val < pvThreshold &
+  abs(dataColorectal9348$logFC) > foldThreshold
+]
+de3 <- dataColorectal21510$EntrezID [
+  dataColorectal21510$adj.P.Val < pvThreshold &
+  abs(dataColorectal21510$logFC) > foldThreshold
+]
+de4 <- dataColorectal32323$EntrezID [
+  dataColorectal32323$adj.P.Val < pvThreshold &
+  abs(dataColorectal32323$logFC) > foldThreshold
+]
+de5 <- dataColorectal8671$EntrezID [
+  dataColorectal8671$adj.P.Val < pvThreshold &
+  abs(dataColorectal8671$logFC) > foldThreshold
+]
+
+@
+
+Later, the differentialy expressed genes from different datasets should be combined together:
+<<eval=TRUE, echo=TRUE>>=
+de <- unique( c(de1,de2,de3,de4,de5))
+@
+
+The reference contains all the genes measured in the analysis:
+<<eval=TRUE, echo=TRUE>>=
+ref <- unique( c(
+  dataColorectal4183$EntrezID,
+  dataColorectal9348$EntrezID,
+  dataColorectal21510$EntrezID,
+  dataColorectal32323$EntrezID,
+  dataColorectal8671$EntrezID
+))
+head(ref)
+@
+
+\subsection{Neighbor\_net analysis and resulted network}
+
+We have all the input fot Neighbor\_net analysis.
+
+\begin{itemize}
+\item the gene-gene knowledge in a list format -\Robject {listofgenes}
+\item the experiment data -\Robject{de} and -\Robject{ref}
+\end{itemize}
+
+
+<<eval=TRUE, echo=TRUE>>=
+library("NeighborNet")
+library("graph")
+sig_genes <- neighbor.net(de = de, ref = ref, listofgenes=listofgenes)
+sig_genes
+@
+
+\subsection{Graphical representation of results}
+
+To visualize the identified network use the function \Rfunction{plot}(see Fig.~\ref{fig:colorectalpathway}):
+
+
+<<label=peRes_twoway1,include=FALSE>>=
+require("graph")
+attrs <- list(node= list(fontsize=40,fixedsize= FALSE),graph=list(overlap=FALSE), edge=list(lwd=0.6))
+nAttr <- list()
+nAttr$color <- c(rep("white",length(nodes(sig_genes))))
+names(nAttr$color) <- nodes(sig_genes)
+plot(sig_genes)
+@
+
+\begin{figure}
+\begin{center}
+\resizebox{!}{4in}{
+\includegraphics{fig1}
+}
+\end{center}
+\caption{The active network that describes the putative mechanism involved in colorectal cancer.}
+\label{fig:colorectalpathway}
+\end{figure}
+
+
+
+\bibliographystyle{abbrv}
+\bibliography{neighborNet}
+
+\end{document}
