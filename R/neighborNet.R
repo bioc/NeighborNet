@@ -1,4 +1,4 @@
-#' Neighbor_net analysis: An approach to infer putative disease-specific mechanisms using neighboring gene networks.
+#' Neighbor Net: An approach to infer putative disease-specific mechanisms using neighboring gene networks.
 #'
 #'
 #' @param de a vector including the differentially expressed genes; \code{de} must use the same id's as \code{ref} and the genes in the \code{listofgenes}
@@ -65,13 +65,13 @@
 #'   dataColorectal8671$EntrezID))
 #' de <- unique( c(de1,de2,de3,de4,de5))
 #'
-#' sig_net <- neighbor.net (de, all, listofgenes)
+#' sig_net <- neighborNet (de, all, listofgenes)
 #'
 #' @import graph
 #' @importFrom stats fisher.test p.adjust
 #' @importFrom methods as
 #' @export
-neighbor.net <- function(de,ref,listofgenes,threshold=0.1,minsize=2){
+neighborNet <- function(de,ref,listofgenes,threshold=0.1,minsize=2){
 
     ## remove any duplication and null values from the de and ref vector
     DE <- de

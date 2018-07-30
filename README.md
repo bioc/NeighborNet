@@ -1,1 +1,1 @@
-NeighborNet
+Neighbor Net

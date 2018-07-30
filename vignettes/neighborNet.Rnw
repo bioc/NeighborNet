@@ -31,7 +31,7 @@ This package is indented to be the R implementation of the method introduced in 
 
 \section{Neighbor\_net analysis}
 
-Neighbor\_net (\Rmethod{neighbor.net}) is a tool to identify the active mechanism involved in an investigated phenotype.
+Neighbor\_net (\Rmethod{neighborNet}) is a tool to identify the active mechanism involved in an investigated phenotype.
 This method uses two sources of data: one is the experiment data and the other is the gene-gene interactions knowledge.
 
 \subsection{Gene-gene interaction knowledge}
@@ -127,7 +127,7 @@ We have all the input fot Neighbor\_net analysis.
 <<eval=TRUE, echo=TRUE>>=
 library("NeighborNet")
 library("graph")
-sig_genes <- neighbor.net(de = de, ref = ref, listofgenes=listofgenes)
+sig_genes <- neighborNet(de = de, ref = ref, listofgenes=listofgenes)
 sig_genes
 @
 
