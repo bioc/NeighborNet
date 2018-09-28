@@ -67,7 +67,7 @@
 #'
 #' sig_net <- neighborNet (de, all, listofgenes)
 #'
-#' @import graph
+#' @importFrom graph graphNEL
 #' @importFrom stats fisher.test p.adjust
 #' @importFrom methods as
 #' @export
@@ -83,16 +83,16 @@ neighborNet <- function(de,ref,listofgenes,threshold=0.1,minsize=2){
 
     ## remove neighbor networks with size lower than minsize (default=2)
     listofgenesComplete <- listofgenes
-    len <- unlist(lapply(listofgenes,function(x) length(x)))
+    len <- lengths(listofgenes)
     listofgenes <- listofgenes [  (len > minsize)]
 
     ## calculate a hypergoemetric p-value for each neighbor network
-    DE_inNetworks <- unlist(lapply(listofgenes,function(x) sum(x %in% DE)))
+    DE_inNetworks <- vapply(listofgenes,function(x) sum(x %in% DE), numeric(1))
     genes_in_background <- unique( c( unlist(listofgenes),names(listofgenes) ))
     totalDE <- sum( DE %in% genes_in_background)
     total_inTest <- sum (genes_in_background %in% ALL)
     commonGenes_inNetworks <- unlist(lapply(listofgenes,function(x) sum(x %in% ALL)))
-    pv <- unlist(lapply(c(1:length(listofgenes)), function(x){
+    pv <- unlist(lapply(c(seq_along(listofgenes)), function(x){
       testor <- rbind(c(DE_inNetworks[[x]],(commonGenes_inNetworks[x]-DE_inNetworks[[x]])),
                       c(totalDE-DE_inNetworks[[x]],(total_inTest - commonGenes_inNetworks[x]-totalDE+DE_inNetworks[[x]])))
       fisher.test(testor,alternative = "greater")$p.value
@@ -110,25 +110,18 @@ neighborNet <- function(de,ref,listofgenes,threshold=0.1,minsize=2){
     if ( length(sigNets) > 0 ){
       adj_sigGenes <- matrix(0,nrow=length(genes_in_sigNets),ncol=length(genes_in_sigNets))
       rownames(adj_sigGenes) <- colnames(adj_sigGenes) <- genes_in_sigNets
-      for(i in 1:length( names(sigNets) )){
+      for(i in seq_along( names(sigNets) )){
         adj_sigGenes[ names(sigNets)[i], listofgenes[[ names(sigNets)[i] ]] ] <- 1
       }
 
       ######### make the graphs  undirected
-      for( i in 1:nrow(adj_sigGenes)){
-        for(j in 1:i){
-          if ( adj_sigGenes[i,j] == 1 | adj_sigGenes[j,i] == 1){adj_sigGenes[i,j] <- adj_sigGenes[j,i] <- 1 }
-        }
-      }
+      adj_sigGenes[adj_sigGenes | t(adj_sigGenes)] <- 1
 
       ######### remove self edges
-      for(i in 1:dim(adj_sigGenes)[1] ){
-        adj_sigGenes[ i, i ] <- 0
-      }
+      diag(adj_sigGenes) <- 0
 
       ########## construct the final network
-      # library(graph)
-        ghList <- as(adj_sigGenes,"graphNEL")
+      ghList <- as(adj_sigGenes,"graphNEL")
     }
 
     ### return NULL if there is no significant neighbor networks
