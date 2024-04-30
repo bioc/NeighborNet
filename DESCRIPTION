@@ -1,6 +1,6 @@
 Package: NeighborNet
 Title: Neighbor_net analysis 
-Version: 1.21.1
+Version: 1.22.0
 Author: Sahar Ansari <saharansari@wayne.edu> and Sorin Draghici <sorin@wayne.edu>
 Maintainer: Sahar Ansari <saharansari@wayne.edu>
 Description: Identify the putative mechanism explaining the active interactions between genes in the investigated phenotype.
